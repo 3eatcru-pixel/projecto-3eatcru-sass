@@ -1,0 +1,18 @@
+<main class="min-h-screen bg-[#0c0c0e] text-[#edeeef] relative font-sans">
+  <router-outlet />
+
+  <!-- Global Shared Components (Restricted to App Owner) -->
+  @if (isHqAdmin()) {
+    <app-ecosystem-switcher
+      [show]="showEcosystemSwitcher()"
+      (toggleRequest)="toggleSwitcher()"
+      (navigate)="navigateTo($event)"
+    />
+  }
+
+  <app-notification-toast
+    [notification]="ecosystem.notification()"
+    (closeRequest)="ecosystem.clearNotification()"
+  />
+
+</main>

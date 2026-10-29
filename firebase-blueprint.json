@@ -1,0 +1,370 @@
+{
+  "entities": {
+    "Admin": {
+      "title": "Admin",
+      "description": "Platform Super Admin for HQ Central",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Admin email address",
+          "maxLength": 128
+        },
+        "role": {
+          "type": "string",
+          "description": "Role designation",
+          "enum": ["super_admin", "hq_director", "support"]
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["email", "role"]
+    },
+    "Tenant": {
+      "title": "Tenant",
+      "description": "Registered store enterprise operating in the OS sphere",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Tenant unique identifier",
+          "maxLength": 64
+        },
+        "name": {
+          "type": "string",
+          "description": "Commercial store name",
+          "maxLength": 100
+        },
+        "legalName": {
+          "type": "string",
+          "description": "Corporate entity legal name",
+          "maxLength": 150
+        },
+        "cnpj": {
+          "type": "string",
+          "description": "Tax identification CNPJ",
+          "maxLength": 20
+        },
+        "category": {
+          "type": "string",
+          "description": "Business niche category",
+          "enum": ["restaurant", "retail", "services", "hybrid", "health", "education", "automotive", "beauty", "petshop"]
+        },
+        "plan": {
+          "type": "string",
+          "description": "SaaS subscription tier",
+          "enum": ["Starter", "Professional", "Enterprise"]
+        },
+        "status": {
+          "type": "string",
+          "description": "Account status",
+          "enum": ["active", "suspended", "trial"]
+        },
+        "devicesLimit": {
+          "type": "number",
+          "description": "MDM device limit"
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "Store owner contact email",
+          "maxLength": 128
+        },
+        "phone": {
+          "type": "string",
+          "description": "Store phone contact",
+          "maxLength": 32
+        },
+        "deliveryRadiusKm": {
+          "type": "number",
+          "description": "Delivery range in kilometers"
+        },
+        "serviceFeePercent": {
+          "type": "number",
+          "description": "Platform commission percentage"
+        },
+        "isOpen": {
+          "type": "boolean",
+          "description": "Whether store is currently open"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO creation timestamp"
+        }
+      },
+      "required": ["id", "name", "cnpj", "plan", "status", "contactEmail"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Catalog and inventory item managed by a tenant",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Product ID",
+          "maxLength": 64
+        },
+        "tenantId": {
+          "type": "string",
+          "description": "Parent tenant ID",
+          "maxLength": 64
+        },
+        "name": {
+          "type": "string",
+          "description": "Product title",
+          "maxLength": 120
+        },
+        "category": {
+          "type": "string",
+          "description": "Product category",
+          "maxLength": 60
+        },
+        "price": {
+          "type": "number",
+          "description": "Selling price"
+        },
+        "costPrice": {
+          "type": "number",
+          "description": "Wholesale acquisition cost"
+        },
+        "stock": {
+          "type": "number",
+          "description": "Current physical stock"
+        },
+        "barcode": {
+          "type": "string",
+          "description": "EAN / Barcode",
+          "maxLength": 64
+        },
+        "availableOnline": {
+          "type": "boolean",
+          "description": "Visible in public consumer catalog"
+        },
+        "description": {
+          "type": "string",
+          "description": "Item description",
+          "maxLength": 500
+        }
+      },
+      "required": ["id", "tenantId", "name", "price", "stock"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Consumer or in-store order transaction",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Order ID",
+          "maxLength": 64
+        },
+        "tenantId": {
+          "type": "string",
+          "description": "Tenant store ID",
+          "maxLength": 64
+        },
+        "orderNumber": {
+          "type": "string",
+          "description": "Order code",
+          "maxLength": 32
+        },
+        "type": {
+          "type": "string",
+          "description": "Order service type",
+          "enum": ["dine-in", "takeout", "delivery", "pos-counter"]
+        },
+        "customerName": {
+          "type": "string",
+          "description": "Consumer name",
+          "maxLength": 100
+        },
+        "customerPhone": {
+          "type": "string",
+          "description": "Consumer contact phone",
+          "maxLength": 32
+        },
+        "subtotal": {
+          "type": "number",
+          "description": "Subtotal amount"
+        },
+        "total": {
+          "type": "number",
+          "description": "Grand total"
+        },
+        "status": {
+          "type": "string",
+          "description": "Order workflow status",
+          "enum": ["pending", "preparing", "ready", "dispatched", "completed", "cancelled", "delivered"]
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Payment tender",
+          "enum": ["cash", "card", "pix", "online"]
+        },
+        "channel": {
+          "type": "string",
+          "description": "Origination channel",
+          "enum": ["POS", "Customer Storefront", "Table QR", "iFood", "WhatsApp", "Online Marketplace"]
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["id", "tenantId", "orderNumber", "type", "total", "status", "paymentMethod"]
+    },
+    "DeliveryRoute": {
+      "title": "DeliveryRoute",
+      "description": "HQ Pro 3-order route batch for dispatch",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Route ID",
+          "maxLength": 64
+        },
+        "routeCode": {
+          "type": "string",
+          "description": "Batch code (e.g., RT-8801)",
+          "maxLength": 32
+        },
+        "driverId": {
+          "type": "string",
+          "description": "Assigned driver ID",
+          "maxLength": 64
+        },
+        "driverName": {
+          "type": "string",
+          "description": "Driver name",
+          "maxLength": 100
+        },
+        "tenantId": {
+          "type": "string",
+          "description": "Associated primary tenant",
+          "maxLength": 64
+        },
+        "status": {
+          "type": "string",
+          "description": "Route status",
+          "enum": ["available", "accepted", "at_store", "in_progress", "completed"]
+        },
+        "totalDistanceKm": {
+          "type": "number",
+          "description": "Total route distance"
+        },
+        "totalEarnings": {
+          "type": "number",
+          "description": "Driver payout"
+        },
+        "totalDeliveredCount": {
+          "type": "number",
+          "description": "Completed delivery points count"
+        }
+      },
+      "required": ["id", "routeCode", "status", "totalDistanceKm", "totalEarnings"]
+    },
+    "Driver": {
+      "title": "Driver",
+      "description": "Delivery courier in the 3EATCRU network",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Driver ID",
+          "maxLength": 64
+        },
+        "name": {
+          "type": "string",
+          "description": "Driver full name",
+          "maxLength": 100
+        },
+        "phone": {
+          "type": "string",
+          "description": "Driver phone",
+          "maxLength": 32
+        },
+        "vehicleType": {
+          "type": "string",
+          "description": "Vehicle used",
+          "enum": ["moto", "bike", "carro", "patinete"]
+        },
+        "status": {
+          "type": "string",
+          "description": "Availability state",
+          "enum": ["available", "delivering", "offline"]
+        },
+        "rating": {
+          "type": "number",
+          "description": "Average review score"
+        },
+        "driverType": {
+          "type": "string",
+          "description": "Affiliation",
+          "enum": ["private", "platform"]
+        }
+      },
+      "required": ["id", "name", "phone", "vehicleType", "status"]
+    },
+    "HqSetting": {
+      "title": "HqSetting",
+      "description": "HQ Central platform configuration and financial parameters",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Setting key identifier",
+          "maxLength": 64
+        },
+        "platformCommissionRate": {
+          "type": "number",
+          "description": "Default platform commission percent (8%)"
+        },
+        "activeRegionName": {
+          "type": "string",
+          "description": "Current active commercial zone",
+          "maxLength": 100
+        },
+        "autoRouteOptimization": {
+          "type": "boolean",
+          "description": "Automatic 3-order route generator enabled"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last update timestamp"
+        }
+      },
+      "required": ["id", "platformCommissionRate", "activeRegionName"]
+    }
+  },
+  "firestore": {
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "Whitelisted administrator profiles for HQ Super Admin access"
+    },
+    "/tenants/{tenantId}": {
+      "schema": "Tenant",
+      "description": "Registered store enterprise configuration and profile"
+    },
+    "/tenants/{tenantId}/products/{productId}": {
+      "schema": "Product",
+      "description": "Store inventory and catalog items"
+    },
+    "/tenants/{tenantId}/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Store order transactions from all channels"
+    },
+    "/delivery_routes/{routeId}": {
+      "schema": "DeliveryRoute",
+      "description": "Global 3-order route batches managed by HQ Pro and accepted by drivers"
+    },
+    "/drivers/{driverId}": {
+      "schema": "Driver",
+      "description": "Delivery courier telemetry and driver profile"
+    },
+    "/hq_settings/{settingId}": {
+      "schema": "HqSetting",
+      "description": "Platform global governance configurations"
+    }
+  }
+}
