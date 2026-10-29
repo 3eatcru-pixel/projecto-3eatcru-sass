@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { EcosystemService } from './ecosystem.service';
 import { MapToolsService } from './map-tools.service';
+import { HqApiService } from './hq-api.service';
 
 describe('3EATCRU Core Motors & Services Test Suite', () => {
   let ecosystem: EcosystemService;
@@ -12,6 +13,42 @@ describe('3EATCRU Core Motors & Services Test Suite', () => {
       providers: [
         EcosystemService,
         MapToolsService,
+        {
+          provide: HqApiService,
+          useValue: {
+            getOverview: () => Promise.resolve({
+              tenantsCount: 2,
+              activeTenantsCount: 2,
+              totalDevices: 4,
+              onlineDevices: 4,
+              totalOrders: 10,
+              grossPlatformVolume: 500,
+              hqCommissionRevenue: 40,
+              defaultCommissionPercent: 8,
+              maintenanceMode: false,
+              globalBroadcastMessage: null,
+              serverUptimeSeconds: 100,
+              timestamp: new Date().toISOString()
+            }),
+            getTenants: () => Promise.resolve([]),
+            getDevices: () => Promise.resolve([]),
+            getAuditLogs: () => Promise.resolve([]),
+            runAudit: () => Promise.resolve({
+              timestamp: '29/10/2026',
+              tenantsChecked: 2,
+              productsChecked: 10,
+              ordersChecked: 5,
+              devicesChecked: 3,
+              ledgerConsistent: true,
+              issuesFound: [],
+              status: 'passed' as const
+            }),
+            updateTenant: () => Promise.resolve({ id: 'tenant-1' }),
+            createTenant: () => Promise.resolve({ id: 'tenant-new' }),
+            lockDevice: () => Promise.resolve({ id: 'dev-1', status: 'locked' }),
+            restartDevice: () => Promise.resolve({ message: 'ok', status: 'updating' })
+          }
+        },
         provideRouter([
           { path: 'login', children: [] },
           { path: 'hq', children: [] },
@@ -152,6 +189,18 @@ describe('3EATCRU Core Motors & Services Test Suite', () => {
       expect(added.tableNumber).toBe('Mesa 1');
       expect(added.items.length).toBe(1);
       expect(added.items[0].quantity).toBe(2);
+    });
+
+    it('should handle HQ backend synchronization gracefully', async () => {
+      const result = await ecosystem.syncHqFromBackend();
+      expect(typeof result).toBe('boolean');
+    });
+
+    it('should execute structural audit on backend with safe fallback', async () => {
+      const report = await ecosystem.runStructuralAuditOnBackend();
+      expect(report).toBeDefined();
+      expect(ecosystem.systemAuditVerified()).toBe(true);
+      expect(ecosystem.lastSystemAuditReport()?.status).toBe(report.status);
     });
   });
 });

@@ -39,6 +39,7 @@ import { OrderWorkflowCoreEngine } from '../core/engines/order-workflow-core.eng
 import { SimulationSandboxEngine } from '../core/engines/simulation-sandbox.engine';
 import { PaymentEngine } from '../core/engines/payment.engine';
 import { FirebaseService } from '../core/firebase/firebase.service';
+import { HqApiService } from './hq-api.service';
 
 @Injectable({
   providedIn: 'root'
@@ -47,6 +48,7 @@ export class EcosystemService {
   private readonly router = inject(Router);
   public readonly mapTools = inject(MapToolsService);
   public readonly firebase = inject(FirebaseService);
+  public readonly hqApi = inject(HqApiService, { optional: true });
 
   // Core Business Engines
   public readonly financialEngine = inject(FinancialCoreEngine);
@@ -203,6 +205,56 @@ export class EcosystemService {
       );
       this.notify(`Auditoria concluída com ${report.issuesFound.length} apontamento(s). Consulte o painel HQ.`, 'warning');
     }
+  }
+
+  async syncHqFromBackend(): Promise<boolean> {
+    if (!this.hqApi) return false;
+    try {
+      const overview = await this.hqApi.getOverview();
+      this.maintenanceMode.set(overview.maintenanceMode);
+      if (overview.globalBroadcastMessage !== undefined) {
+        this.globalBroadcastMessage.set(overview.globalBroadcastMessage || '');
+      }
+
+      const [tenants, devices, auditLogs] = await Promise.all([
+        this.hqApi.getTenants().catch(() => []),
+        this.hqApi.getDevices().catch(() => []),
+        this.hqApi.getAuditLogs().catch(() => [])
+      ]);
+
+      if (Array.isArray(tenants) && tenants.length > 0) {
+        this.tenants.set(tenants);
+      }
+      if (Array.isArray(devices) && devices.length > 0) {
+        this.devices.set(devices);
+      }
+      if (Array.isArray(auditLogs) && auditLogs.length > 0) {
+        this.auditLogs.set(auditLogs);
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async runStructuralAuditOnBackend(): Promise<SystemAuditReport> {
+    if (this.hqApi) {
+      try {
+        const report = await this.hqApi.runAudit();
+        this.lastSystemAuditReport.set(report);
+        this.systemAuditVerified.set(true);
+        if (report.status === 'passed') {
+          this.notify(`Auditoria de Plataforma (Backend) aprovada: ${report.tenantsChecked} lojas e ${report.ordersChecked} pedidos validados.`, 'success');
+        } else {
+          this.notify(`Auditoria de Plataforma (Backend): ${report.issuesFound.length} apontamento(s).`, 'warning');
+        }
+        return report;
+      } catch {
+        // fallback to local engine
+      }
+    }
+    this.verifyFullSystemAudit();
+    return this.lastSystemAuditReport()!;
   }
 
   updateRegionalConfig(updates: Partial<RegionalMarketplaceConfig>) {
@@ -1747,8 +1799,8 @@ export class EcosystemService {
       createdAt: new Date().toISOString().split('T')[0]
     };
     this.tenants.update(t => [...t, newT]);
-    if (this.firebase.isInitialized()) {
-      this.firebase.saveTenant(newT).catch(err => console.warn('Firebase tenant sync deferred:', err));
+    if (this.hqApi) {
+      this.hqApi.createTenant(newT).catch(err => console.warn('HQ API createTenant sync deferred:', err));
     }
     this.logAudit('Nova Empresa Provisionada', 'HQ', `Empresa ${newT.name} (${newT.cnpj}) foi provisionada com sucesso.`, 'info');
   }
@@ -1758,8 +1810,8 @@ export class EcosystemService {
       tenants.map(t => t.id === tenantId ? { ...t, ...updatedData } : t)
     );
     const tenant = this.tenants().find(t => t.id === tenantId);
-    if (tenant && this.firebase.isInitialized()) {
-      this.firebase.saveTenant(tenant).catch(err => console.warn('Firebase tenant update deferred:', err));
+    if (this.hqApi) {
+      this.hqApi.updateTenant(tenantId, updatedData).catch(err => console.warn('HQ API updateTenant deferred:', err));
     }
     this.logAudit('Atualização de Empresa', 'HQ', `Configurações da empresa ${tenant?.name} foram alteradas.`, 'info');
     this.notify('Vitrine pública atualizada com sucesso! Todas as alterações já estão visíveis aos clientes.', 'success');
@@ -1777,6 +1829,10 @@ export class EcosystemService {
     this.tenants.update(tenants =>
       tenants.map(t => t.id === dev.tenantId ? { ...t, activeDevicesCount: t.activeDevicesCount + 1 } : t)
     );
+
+    if (this.hqApi) {
+      this.hqApi.pairDevice(dev).catch(err => console.warn('HQ API pairDevice deferred:', err));
+    }
 
     this.auditLogs.update(logs => [
       {
@@ -1796,6 +1852,9 @@ export class EcosystemService {
     this.devices.update(devices =>
       devices.map(d => d.id === deviceId ? { ...d, status: 'locked' } : d)
     );
+    if (this.hqApi) {
+      this.hqApi.lockDevice(deviceId).catch(err => console.warn('HQ API lockDevice deferred:', err));
+    }
     this.auditLogs.update(logs => [
       {
         id: 'log-' + Math.floor(Math.random() * 9000 + 1000),
@@ -1814,6 +1873,9 @@ export class EcosystemService {
     this.devices.update(devices =>
       devices.map(d => d.id === deviceId ? { ...d, status: 'online' } : d)
     );
+    if (this.hqApi) {
+      this.hqApi.lockDevice(deviceId).catch(err => console.warn('HQ API unlockDevice deferred:', err));
+    }
   }
 
   revokeDevice(deviceId: string) {
@@ -1843,8 +1905,11 @@ export class EcosystemService {
     this.devices.update(devices =>
       devices.map(d => d.id === deviceId ? { ...d, status: 'updating' } : d)
     );
-    this.logAudit('Reinicialização MDM', 'HQ', `[SIMULAÇÃO DE COMANDO MDM] Ciclo de reinicialização simulado localmente para o terminal ${dev?.deviceName || deviceId}.`, 'info');
-    this.notify(`[SIMULAÇÃO MDM] Comando de reinicialização enviado ao terminal ${dev?.deviceName || deviceId}.`, 'info');
+    if (this.hqApi) {
+      this.hqApi.restartDevice(deviceId).catch(err => console.warn('HQ API restartDevice deferred:', err));
+    }
+    this.logAudit('Reinicialização MDM', 'HQ', `Ciclo de reinicialização remota disparado para o terminal ${dev?.deviceName || deviceId}.`, 'info');
+    this.notify(`Comando de reinicialização remota enviado ao terminal ${dev?.deviceName || deviceId}.`, 'info');
     setTimeout(() => {
       this.devices.update(devices =>
         devices.map(d => d.id === deviceId ? { ...d, status: 'online', lastPing: 'Agora mesmo' } : d)

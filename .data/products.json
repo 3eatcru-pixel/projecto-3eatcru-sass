@@ -1,0 +1,47 @@
+[
+  {
+    "id": "prod-1",
+    "tenantId": "tenant-1",
+    "name": "Burger Cru Artesanal",
+    "category": "Hambúrgueres",
+    "price": 38.9,
+    "costPrice": 14.5,
+    "stock": 45,
+    "minStock": 10,
+    "barcode": "789123456001",
+    "sku": "BGR-CRU-01",
+    "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400",
+    "description": "Pão brioche selado, blend de 180g de angus, cheddar inglês maturado e maionese trufada.",
+    "availableOnline": true
+  },
+  {
+    "id": "prod-2",
+    "tenantId": "tenant-1",
+    "name": "Smash Bacon Double",
+    "category": "Hambúrgueres",
+    "price": 32.5,
+    "costPrice": 11.2,
+    "stock": 60,
+    "minStock": 15,
+    "barcode": "789123456002",
+    "sku": "BGR-SMASH-02",
+    "image": "https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400",
+    "description": "Dois discos de 90g ultra esmagados com crosta caramelizada e fatias crocantes de bacon artesanal.",
+    "availableOnline": true
+  },
+  {
+    "id": "prod-3",
+    "tenantId": "tenant-1",
+    "name": "Batata Rústica com Alecrim",
+    "category": "Acompanhamentos",
+    "price": 19.9,
+    "costPrice": 5.5,
+    "stock": 80,
+    "minStock": 20,
+    "barcode": "789123456003",
+    "sku": "SIDE-FRIES-03",
+    "image": "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400",
+    "description": "Batatas com corte rústico, fritas em imersão dupla com ramos de alecrim fresco e flor de sal.",
+    "availableOnline": true
+  }
+]

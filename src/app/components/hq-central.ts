@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
@@ -769,7 +769,7 @@ interface CommandItem {
                  </h3>
                  <div class="flex items-center gap-3">
                     <button
-                      (click)="ecosystem.verifyFullSystemAudit()"
+                      (click)="ecosystem.runStructuralAuditOnBackend()"
                       [disabled]="ecosystem.systemAuditVerified()"
                       [class]="ecosystem.systemAuditVerified() ? 'bg-emerald-900/50 text-emerald-400 border-emerald-500/30' : 'bg-rose-950 text-rose-300 border-rose-600 hover:bg-rose-900'"
                       class="text-[10px] font-mono font-bold px-4 py-1.5 rounded-xl border transition-all flex items-center gap-2 cursor-pointer shadow-lg">
@@ -1096,13 +1096,18 @@ export class HQCentralComponent implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
+    // Sync state with Express backend
+    this.ecosystem.syncHqFromBackend();
     // Audit check on mount
     this.ecosystem.logAudit('Acesso HQ Central', 'HQ', 'Painel administrativo supremo acessado pelo Dono do App.', 'info');
   }
 
-
   toggleMaintenanceMode() {
-    this.ecosystem.maintenanceMode.update(v => !v);
+    const next = !this.ecosystem.maintenanceMode();
+    this.ecosystem.maintenanceMode.set(next);
+    if (this.ecosystem.hqApi) {
+      this.ecosystem.hqApi.setMaintenance(next).catch(err => console.warn('Maintenance sync deferred:', err));
+    }
   }
 
   onWindowKeydown(event: KeyboardEvent) {
@@ -1206,6 +1211,9 @@ export class HQCentralComponent implements OnInit {
   sendBroadcast(msg: string) {
     if (!msg) return;
     this.ecosystem.globalBroadcastMessage.set(msg);
+    if (this.ecosystem.hqApi) {
+      this.ecosystem.hqApi.setBroadcast(msg).catch(err => console.warn('Broadcast sync deferred:', err));
+    }
     this.ecosystem.notify('Broadcast Global enviado!', 'success');
     this.ecosystem.logAudit('Broadcast Global', 'HQ', `Mensagem disparada: ${msg}`, 'warning');
   }

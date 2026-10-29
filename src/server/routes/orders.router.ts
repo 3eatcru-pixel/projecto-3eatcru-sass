@@ -19,11 +19,15 @@ const defaultOrders: OrderTransaction[] = [
           id: 'prod-1',
           name: 'Burger Cru Artesanal',
           price: 38.9,
+          costPrice: 14.5,
           stock: 45,
-          category: 'Hambúrgueres',
-          cost: 14.5,
           minStock: 10,
-          unit: 'un'
+          barcode: '789123456001',
+          sku: 'BGR-CRU-01',
+          image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400',
+          category: 'Hambúrgueres',
+          availableOnline: true,
+          description: 'Pão brioche selado com burger angus'
         },
         quantity: 2
       }
@@ -43,6 +47,11 @@ const defaultOrders: OrderTransaction[] = [
 export const ordersStorage = new FileStorage<OrderTransaction>('orders', defaultOrders);
 export const ordersRouter = Router();
 
+function getParamId(req: Request): string {
+  const p = req.params['id'];
+  return Array.isArray(p) ? p[0] : (p || '');
+}
+
 // GET /api/orders?tenantId=... - List orders
 ordersRouter.get('/', (req: Request, res: Response) => {
   const tenantId = req.query['tenantId'] as string | undefined;
@@ -56,7 +65,8 @@ ordersRouter.get('/', (req: Request, res: Response) => {
 
 // GET /api/orders/:id - Single order
 ordersRouter.get('/:id', (req: Request, res: Response) => {
-  const order = ordersStorage.getById(req.params['id']);
+  const id = getParamId(req);
+  const order = ordersStorage.getById(id);
   if (!order) {
     res.status(404).json({ error: 'Order not found.' });
     return;
@@ -137,6 +147,7 @@ ordersRouter.post('/', (req: Request, res: Response) => {
 
 // PATCH /api/orders/:id/status - Update order workflow status
 ordersRouter.patch('/:id/status', (req: Request, res: Response) => {
+  const id = getParamId(req);
   const { status } = req.body;
   const validStatuses: OrderTransaction['status'][] = ['pending', 'preparing', 'ready', 'dispatched', 'completed', 'cancelled'];
   if (!validStatuses.includes(status)) {
@@ -144,7 +155,7 @@ ordersRouter.patch('/:id/status', (req: Request, res: Response) => {
     return;
   }
 
-  const updated = ordersStorage.update(req.params['id'], { status });
+  const updated = ordersStorage.update(id, { status });
   if (!updated) {
     res.status(404).json({ error: 'Order not found.' });
     return;

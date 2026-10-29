@@ -1,0 +1,39 @@
+[
+  {
+    "id": "ord-init-1001",
+    "orderNumber": "#1001",
+    "tenantId": "tenant-1",
+    "customerName": "Lucas Silveira",
+    "customerPhone": "(11) 98888-1111",
+    "type": "delivery",
+    "status": "completed",
+    "items": [
+      {
+        "product": {
+          "id": "prod-1",
+          "name": "Burger Cru Artesanal",
+          "price": 38.9,
+          "costPrice": 14.5,
+          "stock": 45,
+          "minStock": 10,
+          "barcode": "789123456001",
+          "sku": "BGR-CRU-01",
+          "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400",
+          "category": "Hambúrgueres",
+          "availableOnline": true,
+          "description": "Pão brioche selado com burger angus"
+        },
+        "quantity": 2
+      }
+    ],
+    "subtotal": 77.8,
+    "tax": 6.5,
+    "discount": 0,
+    "total": 84.3,
+    "paymentMethod": "pix",
+    "channel": "Customer Storefront",
+    "createdAt": "2026-10-29T15:23:12.670Z",
+    "isSimulated": false,
+    "mode": "real"
+  }
+]

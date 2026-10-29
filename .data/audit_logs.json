@@ -1,0 +1,47 @@
+[
+  {
+    "id": "aud-test-1793292312171",
+    "timestamp": "29/10/2026, 13:45:12",
+    "user": "fundador@3eatcru.com.br",
+    "action": "Auditoria de Teste",
+    "module": "HQ",
+    "details": "Verificação da integridade do backend HQ Central",
+    "severity": "info"
+  },
+  {
+    "id": "aud-test-1793292202227",
+    "timestamp": "29/10/2026, 13:43:22",
+    "user": "fundador@3eatcru.com.br",
+    "action": "Auditoria de Teste",
+    "module": "HQ",
+    "details": "Verificação da integridade do backend HQ Central",
+    "severity": "info"
+  },
+  {
+    "id": "aud-test-1793292153135",
+    "timestamp": "29/10/2026, 13:42:33",
+    "user": "fundador@3eatcru.com.br",
+    "action": "Auditoria de Teste",
+    "module": "HQ",
+    "details": "Verificação da integridade do backend HQ Central",
+    "severity": "info"
+  },
+  {
+    "id": "aud-test-1793291506990",
+    "timestamp": "29/10/2026, 13:31:46",
+    "user": "fundador@3eatcru.com.br",
+    "action": "Auditoria de Teste",
+    "module": "HQ",
+    "details": "Verificação da integridade do backend HQ Central",
+    "severity": "info"
+  },
+  {
+    "id": "aud-init-1",
+    "timestamp": "29/10/2026, 13:31:46",
+    "user": "fundador@3eatcru.com.br",
+    "action": "Inicialização do Gabinete HQ Central",
+    "module": "HQ",
+    "details": "Cluster de governança inicializado com nós multi-tenant conectados.",
+    "severity": "info"
+  }
+]
