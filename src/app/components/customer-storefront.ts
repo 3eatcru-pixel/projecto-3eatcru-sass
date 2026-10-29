@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { EcosystemService } from '../services/ecosystem.service';
 import { ProductItem, CartItem, OrderTransaction } from '../models/ecosystem.model';
 
@@ -425,6 +425,18 @@ import { ProductItem, CartItem, OrderTransaction } from '../models/ecosystem.mod
 export class CustomerStorefrontComponent {
   readonly ecosystem = inject(EcosystemService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute, { optional: true });
+
+  constructor() {
+    if (this.route) {
+      this.route.paramMap.subscribe(params => {
+        const id = params.get('id');
+        if (id) {
+          this.ecosystem.currentTenantId.set(id);
+        }
+      });
+    }
+  }
 
   readonly isHqAdmin = computed(() => this.ecosystem.currentSession()?.role === 'hq_admin');
   readonly isStoreOperator = computed(() => {
@@ -545,14 +557,14 @@ export class CustomerStorefrontComponent {
     // If dine-in, mark table occupied and update running total
     if (isDineIn) {
       const tblNum = this.selectedTableNumber();
-      this.ecosystem.tables.update(tables =>
-        tables.map(t => t.number === tblNum ? {
-          ...t,
+      const tbl = this.ecosystem.tables().find(t => t.number === tblNum);
+      if (tbl) {
+        this.ecosystem.updateTable(tbl.id, {
           status: 'occupied',
-          currentTotal: (t.currentTotal || 0) + total,
-          guests: t.guests || 2
-        } : t)
-      );
+          currentTotal: (tbl.currentTotal || 0) + total,
+          guests: tbl.guests || 2
+        });
+      }
       this.ecosystem.notify(`Pedido enviado via QR Code para a Mesa ${tblNum}! Notificado no App do Garçom e no KDS da Cozinha.`, 'success');
     } else {
       this.ecosystem.notify(`Pedido ${orderNum} realizado com sucesso! Enviado para a cozinha (KDS) e PDV da loja ${this.activeStore().name}.`, 'success');

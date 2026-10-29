@@ -531,15 +531,12 @@ export class WaiterAppComponent {
     });
 
     // Mark table as occupied and update running total
-    this.ecosystem.tables.update(tables =>
-      tables.map(t => t.id === table.id ? {
-        ...t,
-        status: 'occupied',
-        server: this.serverName(),
-        currentTotal: (t.currentTotal || 0) + finalBillAmount,
-        guests: t.guests || 2
-      } : t)
-    );
+    this.ecosystem.updateTable(table.id, {
+      status: 'occupied',
+      server: this.serverName(),
+      currentTotal: (table.currentTotal || 0) + finalBillAmount,
+      guests: table.guests || 2
+    });
 
     this.draftItems.set([]);
     this.ecosystem.notify(`Comanda da Mesa ${table.number} com ${items.length} pratos disparada com sucesso para a Cozinha (KDS)!`, 'success');
@@ -554,9 +551,7 @@ export class WaiterAppComponent {
     const guests = table.guests || 2;
     const perPerson = total / guests;
 
-    this.ecosystem.tables.update(tables =>
-      tables.map(t => t.id === table.id ? { ...t, status: 'billing' } : t)
-    );
+    this.ecosystem.updateTable(table.id, { status: 'billing' });
 
     this.ecosystem.notify(`Pré-conta da Mesa ${table.number} solicitada: R$ ${total.toFixed(2)} (${guests}x R$ ${perPerson.toFixed(2)}/pessoa). Caixa notificado!`, 'info');
     this.activeTab.set('mesas');

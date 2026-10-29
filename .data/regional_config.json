@@ -1,0 +1,20 @@
+[
+  {
+    "id": "global-regional",
+    "config": {
+      "heroTitle": "Encontre Estabelecimentos pelo Ecossistema 3eatcru",
+      "heroSubtitle": "Explore fichas comerciais em modo Fichário, consulte o Livro-Razão Contábil ou localize pela Mesa Cartográfica com cálculo geodésico de distância real.",
+      "heroTag": "ARQUIVO DE NEGÓCIOS LOCAIS & BALCÕES PÚBLICOS",
+      "heroBannerImage": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1600&q=80",
+      "heroCtaText": "Explorar Arquivo de Negócios",
+      "heroAnnouncement": "NOVA PRAÇA HOMOLOGADA: 12 unidades cadastradas em São Paulo. Explore a praça com cálculo geodésico de distância real.",
+      "showHeroAnnouncement": true,
+      "featuredTenantIds": [
+        "tenant-1",
+        "tenant-2"
+      ],
+      "defaultSearchRadiusKm": 15,
+      "activeRegionName": "Grande São Paulo • Polo Gastronômico Central"
+    }
+  }
+]

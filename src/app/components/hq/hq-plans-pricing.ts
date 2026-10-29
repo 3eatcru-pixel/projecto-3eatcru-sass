@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { EcosystemService } from '../../services/ecosystem.service';
+import { LicensePlan } from '../../models/ecosystem.model';
 
 @Component({
   selector: 'app-hq-plans-pricing',
@@ -79,7 +80,7 @@ import { EcosystemService } from '../../services/ecosystem.service';
 
             <button
               type="button"
-              (click)="ecosystem.notify('Parâmetros do plano ' + plan.name + ' salvos com sucesso pelo HQ Central!', 'success')"
+              (click)="savePlan(plan)"
               class="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black py-3 rounded-2xl shadow-lg border border-amber-400/50 text-xs uppercase tracking-wider transition-all cursor-pointer">
               Salvar Alterações do Plano
             </button>
@@ -98,5 +99,9 @@ export class HqPlansPricingComponent {
     if (!isNaN(num)) {
       this.ecosystem.updatePlanPrice(planId, num);
     }
+  }
+
+  savePlan(plan: LicensePlan) {
+    this.ecosystem.updatePlanPrice(plan.id, plan.priceMonthly);
   }
 }

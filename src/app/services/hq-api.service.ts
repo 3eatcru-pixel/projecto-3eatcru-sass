@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { CompanyTenant, POSDevice, AuditLog, SystemAuditReport } from '../models/ecosystem.model';
+import { CompanyTenant, POSDevice, AuditLog, SystemAuditReport, LicensePlan, RegionalMarketplaceConfig, StoreDriver, ConsumerAccount } from '../models/ecosystem.model';
 
 export interface HqOverviewResponse {
   tenantsCount: number;
@@ -114,5 +114,54 @@ export class HqApiService {
 
   async updateTenant(tenantId: string, updates: Partial<CompanyTenant>): Promise<CompanyTenant> {
     return firstValueFrom(this.http.patch<CompanyTenant>(`${this.baseUrl}/tenants/${tenantId}`, updates));
+  }
+
+  // 7. SaaS License Plans
+  async getPlans(): Promise<LicensePlan[]> {
+    return firstValueFrom(this.http.get<LicensePlan[]>(`${this.baseUrl}/hq/plans`));
+  }
+
+  async updatePlan(planId: string, updates: Partial<LicensePlan>): Promise<LicensePlan> {
+    return firstValueFrom(this.http.patch<LicensePlan>(`${this.baseUrl}/hq/plans/${planId}`, updates));
+  }
+
+  // 8. Regional Marketplace Configuration
+  async getRegionalConfig(): Promise<RegionalMarketplaceConfig> {
+    return firstValueFrom(this.http.get<RegionalMarketplaceConfig>(`${this.baseUrl}/hq/regional`));
+  }
+
+  async updateRegionalConfig(config: RegionalMarketplaceConfig): Promise<{ config: RegionalMarketplaceConfig }> {
+    return firstValueFrom(this.http.post<{ config: RegionalMarketplaceConfig }>(`${this.baseUrl}/hq/regional`, config));
+  }
+
+  // 9. MDM Drivers Telematics
+  async getDrivers(): Promise<StoreDriver[]> {
+    return firstValueFrom(this.http.get<StoreDriver[]>(`${this.baseUrl}/hq/drivers`));
+  }
+
+  async createDriver(driver: Partial<StoreDriver>): Promise<StoreDriver> {
+    return firstValueFrom(this.http.post<StoreDriver>(`${this.baseUrl}/hq/drivers`, driver));
+  }
+
+  async updateDriver(driverId: string, updates: Partial<StoreDriver>): Promise<StoreDriver> {
+    return firstValueFrom(this.http.patch<StoreDriver>(`${this.baseUrl}/hq/drivers/${driverId}`, updates));
+  }
+
+  async pingDriverGps(driverId: string, data?: { locationName?: string; batteryLevel?: number }): Promise<StoreDriver> {
+    return firstValueFrom(this.http.post<StoreDriver>(`${this.baseUrl}/hq/drivers/${driverId}/ping`, data || {}));
+  }
+
+  // 10. Global CRM Consumers
+  async getConsumers(): Promise<ConsumerAccount[]> {
+    return firstValueFrom(this.http.get<ConsumerAccount[]>(`${this.baseUrl}/hq/consumers`));
+  }
+
+  async saveConsumer(consumer: Partial<ConsumerAccount>): Promise<ConsumerAccount> {
+    return firstValueFrom(this.http.post<ConsumerAccount>(`${this.baseUrl}/hq/consumers`, consumer));
+  }
+
+  // 11. System Platform Commission
+  async setCommissionRate(rate: number): Promise<{ platformCommissionRate: number; percent: number }> {
+    return firstValueFrom(this.http.post<{ platformCommissionRate: number; percent: number }>(`${this.baseUrl}/hq/system/commission`, { rate }));
   }
 }

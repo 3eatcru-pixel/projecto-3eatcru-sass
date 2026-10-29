@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
@@ -41,7 +41,7 @@ import { EcosystemService } from '../services/ecosystem.service';
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-1">
             <!-- DEMO 1: Dono do App (HQ Central) -->
             <button
               type="button"
@@ -120,6 +120,26 @@ import { EcosystemService } from '../services/ecosystem.service';
                 </div>
               </div>
               <mat-icon class="text-purple-400 text-base group-hover:translate-x-1 transition-transform">near_me</mat-icon>
+            </button>
+
+            <!-- DEMO 5: Garçom / Comanda Mobile -->
+            <button
+              type="button"
+              (click)="openWaiterApp()"
+              class="group bg-[#422312] hover:bg-[#522d18] border border-[#63361c] hover:border-amber-500/60 rounded-xl p-3 flex items-center justify-between transition-all active:scale-98 text-left shadow-md cursor-pointer">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-600 to-amber-800 text-white flex items-center justify-center font-bold shadow-md shrink-0">
+                  <mat-icon class="text-xl">table_bar</mat-icon>
+                </div>
+                <div>
+                  <div class="font-bold text-xs text-stone-100 group-hover:text-amber-300 transition-colors flex items-center gap-1.5">
+                    <span>5. Garçom</span>
+                    <span class="text-[8px] bg-amber-950 text-amber-300 border border-amber-800 px-1 py-0.2 rounded font-mono">WAITER</span>
+                  </div>
+                  <div class="text-[10px] font-mono text-amber-400/80">Comanda Mobile • Salão</div>
+                </div>
+              </div>
+              <mat-icon class="text-amber-400 text-base group-hover:translate-x-1 transition-transform">room_service</mat-icon>
             </button>
           </div>
         </div>
@@ -263,6 +283,11 @@ export class LoginBancadaComponent {
   openDriverApp() {
     this.ecosystem.activeTab.set('driver');
     this.router.navigate(['/driver']);
+  }
+
+  openWaiterApp() {
+    this.ecosystem.activeTab.set('client');
+    this.router.navigate(['/waiter']);
   }
 }
 

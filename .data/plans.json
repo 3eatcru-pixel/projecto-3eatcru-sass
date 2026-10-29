@@ -1,0 +1,41 @@
+[
+  {
+    "id": "Starter",
+    "name": "Starter (Iniciante)",
+    "priceMonthly": 149,
+    "maxDevices": 2,
+    "includedModules": [
+      "PDV Caixa",
+      "Estoque Básico",
+      "Relatórios Simples"
+    ],
+    "description": "Ideal para pequenos comércios e balcões individuais."
+  },
+  {
+    "id": "Professional",
+    "name": "Professional (Avançado)",
+    "priceMonthly": 299,
+    "maxDevices": 5,
+    "includedModules": [
+      "PDV Avançado",
+      "KDS Cozinha",
+      "Mesas & Salão",
+      "Estoque ERP",
+      "Hub Logística"
+    ],
+    "description": "Perfeito para restaurantes e lojas com grande fluxo de atendimento."
+  },
+  {
+    "id": "Enterprise",
+    "name": "Enterprise (Corporativo)",
+    "priceMonthly": 599,
+    "maxDevices": 20,
+    "includedModules": [
+      "Ilimitado Total",
+      "Franquias Multi-Unidade",
+      "Split Dedicado",
+      "MDM Supremo"
+    ],
+    "description": "Para redes de lojas, franquias e operações de alta complexidade."
+  }
+]

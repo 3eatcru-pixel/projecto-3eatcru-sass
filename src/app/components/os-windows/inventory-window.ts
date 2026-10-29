@@ -280,9 +280,10 @@ export class InventoryWindowComponent {
   );
 
   adjustStock(productId: string, delta: number) {
-    this.ecosystem.products.update(prods =>
-      prods.map(p => p.id === productId ? { ...p, stock: Math.max(0, p.stock + delta) } : p)
-    );
+    const prod = this.ecosystem.products().find(p => p.id === productId);
+    if (!prod) return;
+    const newStock = Math.max(0, prod.stock + delta);
+    this.ecosystem.updateProduct(productId, { stock: newStock });
   }
 
   openLossModal(prod: ProductItem) {
@@ -308,13 +309,12 @@ export class InventoryWindowComponent {
   onSaveNfe(event: { productId: string, quantity: number, costPrice: number, supplier: string }) {
     const { productId, quantity, costPrice, supplier } = event;
 
-    this.ecosystem.products.update(prods =>
-      prods.map(p => p.id === productId ? { 
-        ...p, 
-        stock: p.stock + quantity,
-        costPrice: Math.round(((p.costPrice * p.stock + costPrice * quantity) / (p.stock + quantity)) * 100) / 100
-      } : p)
-    );
+    const prod = this.ecosystem.products().find(p => p.id === productId);
+    if (prod) {
+      const newStock = prod.stock + quantity;
+      const newCost = Math.round(((prod.costPrice * prod.stock + costPrice * quantity) / (prod.stock + quantity)) * 100) / 100;
+      this.ecosystem.updateProduct(productId, { stock: newStock, costPrice: newCost });
+    }
 
     this.ecosystem.addFinancialEntry({
       date: new Date().toISOString(),

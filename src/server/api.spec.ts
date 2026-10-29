@@ -3,7 +3,9 @@ import { FileStorage } from './db/file-storage';
 import { tenantsStorage } from './routes/tenants.router';
 import { productsStorage } from './routes/products.router';
 import { ordersStorage } from './routes/orders.router';
-import { devicesStorage, auditStorage } from './routes/hq.router';
+import { devicesStorage, auditStorage, plansStorage, regionalStorage, driversStorage, consumersStorage } from './routes/hq.router';
+import { tablesStorage } from './routes/tables.router';
+import { financialsStorage } from './routes/financials.router';
 
 describe('3EATCRU Backend Core Storage & API Suite', () => {
   interface TestItem {
@@ -126,6 +128,98 @@ describe('3EATCRU Backend Core Storage & API Suite', () => {
       const logsAfter = auditStorage.getAll();
       expect(logsAfter.length).toBe(initialLogs.length + 1);
       expect(logsAfter.find(l => l.id === testAudit.id)).toBeDefined();
+    });
+  });
+
+  describe('Store OS Backend Storage (Tables & Financials)', () => {
+    it('should retrieve dine-in tables and allow status updates', () => {
+      const tables = tablesStorage.getAll();
+      expect(tables.length).toBeGreaterThanOrEqual(4);
+
+      const table1 = tables.find(t => t.id === 't-1');
+      expect(table1).toBeDefined();
+
+      tablesStorage.update('t-2', { status: 'occupied', guests: 2 });
+      const updated = tablesStorage.getById('t-2');
+      expect(updated?.status).toBe('occupied');
+      expect(updated?.guests).toBe(2);
+
+      // Revert back
+      tablesStorage.update('t-2', { status: 'available', guests: undefined });
+    });
+
+    it('should store and track financial transactions for store cash operations', () => {
+      const initialCount = financialsStorage.getAll().length;
+      expect(initialCount).toBeGreaterThanOrEqual(1);
+
+      const newRecord = {
+        id: 'fin-test-' + Date.now(),
+        date: new Date().toLocaleDateString('pt-BR'),
+        type: 'sale' as const,
+        category: 'Vendas PDV Balcão',
+        description: 'Venda Teste Backend',
+        amount: 89.9,
+        paymentMethod: 'PIX',
+        referenceId: 'ref-test-01',
+        isSimulated: false,
+        mode: 'real' as const
+      };
+
+      financialsStorage.insert(newRecord);
+      const allAfter = financialsStorage.getAll();
+      expect(allAfter.length).toBe(initialCount + 1);
+      expect(allAfter.find(f => f.id === newRecord.id)).toBeDefined();
+    });
+  });
+
+  describe('HQ Central Extended Domain Governance (Plans, Regional, Drivers, Consumers)', () => {
+    it('should manage SaaS subscription plans and allow price modifications', () => {
+      const plans = plansStorage.getAll();
+      expect(plans.length).toBeGreaterThanOrEqual(3);
+      const starter = plans.find(p => p.id === 'Starter');
+      expect(starter).toBeDefined();
+      expect(starter?.priceMonthly).toBeGreaterThan(0);
+
+      // Test update
+      const originalPrice = starter!.priceMonthly;
+      plansStorage.update('Starter', { priceMonthly: 189.0 });
+      const updated = plansStorage.getById('Starter');
+      expect(updated?.priceMonthly).toBe(189.0);
+
+      // Revert
+      plansStorage.update('Starter', { priceMonthly: originalPrice });
+    });
+
+    it('should govern regional marketplace portal configurations', () => {
+      const allConfigs = regionalStorage.getAll();
+      expect(allConfigs.length).toBeGreaterThanOrEqual(1);
+      const main = regionalStorage.getById('global-regional');
+      expect(main).toBeDefined();
+      expect(main?.config.activeRegionName).toBe('Grande São Paulo • Polo Gastronômico Central');
+      expect(main?.config.defaultSearchRadiusKm).toBe(15);
+    });
+
+    it('should track driver telematics and update GPS positions', () => {
+      const drivers = driversStorage.getAll();
+      expect(drivers.length).toBeGreaterThanOrEqual(2);
+      const d1 = drivers[0];
+      expect(d1.id).toBeDefined();
+
+      const origLocation = d1.currentLocationName;
+      driversStorage.update(d1.id, { currentLocationName: 'Rua Augusta, 500' });
+      const updated = driversStorage.getById(d1.id);
+      expect(updated?.currentLocationName).toBe('Rua Augusta, 500');
+
+      // Revert
+      driversStorage.update(d1.id, { currentLocationName: origLocation });
+    });
+
+    it('should manage global CRM consumers directory', () => {
+      const consumers = consumersStorage.getAll();
+      expect(consumers.length).toBeGreaterThanOrEqual(2);
+      const c1 = consumers.find(c => c.id === 'cons-1');
+      expect(c1).toBeDefined();
+      expect(c1?.name).toBe('Carlos Eduardo');
     });
   });
 });

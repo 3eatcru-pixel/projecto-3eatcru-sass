@@ -815,6 +815,7 @@ export class RegionalMarketplaceComponent {
   private L: any = null;
 
   constructor() {
+    this.ecosystem.syncHqFromBackend();
     afterNextRender(async () => {
       this.L = (await import('leaflet')).default;
       this.initMap();

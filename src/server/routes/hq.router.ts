@@ -3,7 +3,7 @@ import { FileStorage } from '../db/file-storage';
 import { tenantsStorage } from './tenants.router';
 import { productsStorage } from './products.router';
 import { ordersStorage } from './orders.router';
-import { POSDevice, AuditLog, SystemAuditReport } from '../../app/models/ecosystem.model';
+import { POSDevice, AuditLog, SystemAuditReport, LicensePlan, RegionalMarketplaceConfig, StoreDriver, ConsumerAccount } from '../../app/models/ecosystem.model';
 
 const defaultDevices: POSDevice[] = [
   {
@@ -84,13 +84,131 @@ const defaultAuditLogs: AuditLog[] = [
   }
 ];
 
+const defaultPlans: LicensePlan[] = [
+  {
+    id: 'Starter',
+    name: 'Starter (Iniciante)',
+    priceMonthly: 149.00,
+    maxDevices: 2,
+    includedModules: ['PDV Caixa', 'Estoque Básico', 'Relatórios Simples'],
+    description: 'Ideal para pequenos comércios e balcões individuais.'
+  },
+  {
+    id: 'Professional',
+    name: 'Professional (Avançado)',
+    priceMonthly: 299.00,
+    maxDevices: 5,
+    includedModules: ['PDV Avançado', 'KDS Cozinha', 'Mesas & Salão', 'Estoque ERP', 'Hub Logística'],
+    description: 'Perfeito para restaurantes e lojas com grande fluxo de atendimento.'
+  },
+  {
+    id: 'Enterprise',
+    name: 'Enterprise (Corporativo)',
+    priceMonthly: 599.00,
+    maxDevices: 20,
+    includedModules: ['Ilimitado Total', 'Franquias Multi-Unidade', 'Split Dedicado', 'MDM Supremo'],
+    description: 'Para redes de lojas, franquias e operações de alta complexidade.'
+  }
+];
+
+const defaultRegionalConfig: RegionalMarketplaceConfig = {
+  heroTitle: 'Encontre Estabelecimentos pelo Ecossistema 3eatcru',
+  heroSubtitle: 'Explore fichas comerciais em modo Fichário, consulte o Livro-Razão Contábil ou localize pela Mesa Cartográfica com cálculo geodésico de distância real.',
+  heroTag: 'ARQUIVO DE NEGÓCIOS LOCAIS & BALCÕES PÚBLICOS',
+  heroBannerImage: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1600&q=80',
+  heroCtaText: 'Explorar Arquivo de Negócios',
+  heroAnnouncement: 'NOVA PRAÇA HOMOLOGADA: 12 unidades cadastradas em São Paulo. Explore a praça com cálculo geodésico de distância real.',
+  showHeroAnnouncement: true,
+  featuredTenantIds: ['tenant-1', 'tenant-2'],
+  defaultSearchRadiusKm: 15,
+  activeRegionName: 'Grande São Paulo • Polo Gastronômico Central'
+};
+
+const defaultDrivers: StoreDriver[] = [
+  {
+    id: 'drv-1',
+    tenantId: 'tenant-1',
+    name: 'Carlos Oliveira',
+    phone: '(11) 95533-4455',
+    vehicleType: 'moto',
+    licensePlate: 'ABC-4E12',
+    status: 'available',
+    activeDeliveriesCount: 0,
+    rating: 4.9,
+    completedTodayCount: 14,
+    driverType: 'private',
+    deviceName: 'Motorola Moto G84 (Loja)',
+    appVersion: '3EAT Driver App v3.2.0',
+    batteryLevel: 88,
+    complianceVerified: true,
+    currentLocationName: 'Consolação - Próximo à loja',
+    lastGpsPing: 'Agora mesmo'
+  },
+  {
+    id: 'drv-2',
+    tenantId: 'hq',
+    name: 'Marcos Vinicius',
+    phone: '(11) 98777-6655',
+    vehicleType: 'moto',
+    licensePlate: 'XYZ-9B34',
+    status: 'available',
+    activeDeliveriesCount: 1,
+    rating: 4.95,
+    completedTodayCount: 22,
+    driverType: 'platform',
+    deviceName: 'Samsung Galaxy A54 5G (Plataforma)',
+    appVersion: '3EAT Driver App v3.2.0',
+    batteryLevel: 74,
+    complianceVerified: true,
+    currentLocationName: 'Avenida Paulista, 1000',
+    lastGpsPing: 'Agora mesmo'
+  }
+];
+
+const defaultConsumers: ConsumerAccount[] = [
+  {
+    id: 'cons-1',
+    name: 'Carlos Eduardo',
+    email: 'carlos.eduardo@gmail.com',
+    phone: '(11) 98888-7777',
+    cpf: '320.198.441-00',
+    primaryAddress: 'Rua Augusta, 1200 - Apto 42',
+    neighborhood: 'Consolação',
+    city: 'São Paulo',
+    totalOrders: 12,
+    totalSpent: 840.50,
+    status: 'active',
+    registeredAt: '2024-02-10'
+  },
+  {
+    id: 'cons-2',
+    name: 'Mariana Costa',
+    email: 'mariana.costa@outlook.com',
+    phone: '(11) 97777-3322',
+    cpf: '412.875.990-12',
+    primaryAddress: 'Alameda Santos, 800 - Conj 101',
+    neighborhood: 'Cerqueira César',
+    city: 'São Paulo',
+    totalOrders: 8,
+    totalSpent: 520.00,
+    status: 'active',
+    registeredAt: '2024-03-01'
+  }
+];
+
 export const devicesStorage = new FileStorage<POSDevice>('devices', defaultDevices);
 export const auditStorage = new FileStorage<AuditLog>('audit_logs', defaultAuditLogs);
+export const plansStorage = new FileStorage<LicensePlan>('plans', defaultPlans);
+export const regionalStorage = new FileStorage<{ id: string; config: RegionalMarketplaceConfig }>('regional_config', [
+  { id: 'global-regional', config: defaultRegionalConfig }
+]);
+export const driversStorage = new FileStorage<StoreDriver>('drivers', defaultDrivers);
+export const consumersStorage = new FileStorage<ConsumerAccount>('consumers', defaultConsumers);
 
 // Global SaaS Settings State (in-memory with sensible defaults)
 let maintenanceMode = false;
 let globalBroadcastMessage: string | null = null;
-const platformCommissionRate = 0.08; // 8% default platform split
+let platformCommissionRate = 0.08; // 8% default platform split
 
 export const hqRouter = Router();
 
@@ -325,4 +443,155 @@ hqRouter.get('/ledger', (_req: Request, res: Response) => {
     recordsCount: entries.length,
     entries
   });
+});
+
+// GET /api/hq/plans - List SaaS license plans
+hqRouter.get('/plans', (_req: Request, res: Response) => {
+  res.json(plansStorage.getAll());
+});
+
+// PATCH /api/hq/plans/:id - Update SaaS license plan pricing/specs
+hqRouter.patch('/plans/:id', (req: Request, res: Response) => {
+  const id = getParamId(req);
+  const updated = plansStorage.update(id, req.body);
+  if (!updated) {
+    res.status(404).json({ error: 'Plan not found.' });
+    return;
+  }
+  logHqAudit('Plano SaaS Atualizado', `Plano [${updated.name}] atualizado: Mensalidade R$ ${updated.priceMonthly}, Limite ${updated.maxDevices} terminais.`, 'info');
+  res.json(updated);
+});
+
+// GET /api/hq/regional - Get regional marketplace configuration
+hqRouter.get('/regional', (_req: Request, res: Response) => {
+  const item = regionalStorage.getById('global-regional');
+  res.json(item ? item.config : defaultRegionalConfig);
+});
+
+// POST /api/hq/regional - Save regional marketplace configuration
+hqRouter.post('/regional', (req: Request, res: Response) => {
+  const newConfig = req.body as RegionalMarketplaceConfig;
+  regionalStorage.update('global-regional', { config: newConfig });
+  logHqAudit('Configuração Regional Atualizada', `Praça "${newConfig.activeRegionName || 'Principal'}" reconfigurada pelo Gabinete HQ.`, 'info');
+  res.json({ config: newConfig });
+});
+
+// GET /api/hq/drivers - List platform & store drivers
+hqRouter.get('/drivers', (_req: Request, res: Response) => {
+  res.json(driversStorage.getAll());
+});
+
+// POST /api/hq/drivers - Create a new driver (platform or private store driver)
+hqRouter.post('/drivers', (req: Request, res: Response) => {
+  const body = req.body;
+  if (!body.name) {
+    res.status(400).json({ error: 'Driver name is required.' });
+    return;
+  }
+  const id = body.id || `drv-${Date.now().toString(36)}`;
+  const newDriver: StoreDriver = {
+    id,
+    tenantId: body.tenantId || 'tenant-1',
+    name: String(body.name).trim(),
+    phone: body.phone || '(11) 99999-8888',
+    vehicleType: body.vehicleType || 'moto',
+    licensePlate: body.licensePlate,
+    status: body.status || 'available',
+    activeDeliveriesCount: Number(body.activeDeliveriesCount) || 0,
+    rating: Number(body.rating) || 5.0,
+    completedTodayCount: Number(body.completedTodayCount) || 0,
+    driverType: body.driverType || 'private',
+    deviceName: body.deviceName || 'Celular do Entregador (App 3EAT)',
+    appVersion: body.appVersion || '3EAT Driver App v3.2.0',
+    batteryLevel: Number(body.batteryLevel) || 100,
+    complianceVerified: body.complianceVerified ?? true,
+    currentLocationName: body.currentLocationName || 'Na Loja (Disponível)',
+    lastGpsPing: 'Agora mesmo'
+  };
+  driversStorage.insert(newDriver);
+  logHqAudit('Novo Entregador Registrado', `Entregador ${newDriver.name} (${newDriver.driverType}) adicionado à frota.`, 'info');
+  res.status(201).json(newDriver);
+});
+
+// PATCH /api/hq/drivers/:id - Update driver status or details
+hqRouter.patch('/drivers/:id', (req: Request, res: Response) => {
+  const id = getParamId(req);
+  const existing = driversStorage.getById(id);
+  if (!existing) {
+    res.status(404).json({ error: 'Driver not found.' });
+    return;
+  }
+  const updated = driversStorage.update(id, req.body);
+  logHqAudit('Entregador Atualizado', `Entregador ${existing.name} atualizado.`, 'info');
+  res.json(updated);
+});
+
+// POST /api/hq/drivers/:id/ping - Register geodesic GPS telemetry ping
+hqRouter.post('/drivers/:id/ping', (req: Request, res: Response) => {
+  const id = getParamId(req);
+  const driver = driversStorage.getById(id);
+  if (!driver) {
+    res.status(404).json({ error: 'Driver not found.' });
+    return;
+  }
+  const pingTime = new Date().toLocaleTimeString('pt-BR');
+  const locationName = req.body.locationName || driver.currentLocationName || 'São Paulo - Centro';
+  const updated = driversStorage.update(id, {
+    lastGpsPing: pingTime,
+    currentLocationName: locationName,
+    batteryLevel: req.body.batteryLevel ?? driver.batteryLevel
+  });
+  logHqAudit('Telemetria GPS MDM', `Ping registrado para ${driver.name}: ${locationName} (${pingTime}).`, 'info');
+  res.json(updated);
+});
+
+// GET /api/hq/consumers - List CRM consumer accounts
+hqRouter.get('/consumers', (_req: Request, res: Response) => {
+  res.json(consumersStorage.getAll());
+});
+
+// POST /api/hq/consumers - Create or update CRM consumer account
+hqRouter.post('/consumers', (req: Request, res: Response) => {
+  const body = req.body;
+  if (!body.name || !body.email) {
+    res.status(400).json({ error: 'name and email are mandatory.' });
+    return;
+  }
+  const id = body.id || `cons-${Date.now().toString(36)}`;
+  const consumer: ConsumerAccount = {
+    id,
+    name: String(body.name).trim(),
+    email: String(body.email).trim(),
+    phone: body.phone || '(11) 90000-0000',
+    cpf: body.cpf,
+    primaryAddress: body.primaryAddress || 'Endereço Principal',
+    neighborhood: body.neighborhood || 'Centro',
+    city: body.city || 'São Paulo',
+    totalOrders: Number(body.totalOrders) || 0,
+    totalSpent: Number(body.totalSpent) || 0,
+    status: body.status || 'active',
+    registeredAt: body.registeredAt || new Date().toISOString().split('T')[0]
+  };
+  const created = consumersStorage.insert(consumer);
+  res.status(201).json(created);
+});
+
+// POST /api/hq/system/commission - Update default platform commission rate
+hqRouter.post('/system/commission', (req: Request, res: Response) => {
+  let rate = Number(req.body.rate);
+  if (isNaN(rate) || rate < 0) {
+    res.status(400).json({ error: 'rate must be a valid percentage between 0 and 50%.' });
+    return;
+  }
+  // Allow either decimal (0.085) or percentage number (8.5)
+  if (rate > 1) {
+    rate = rate / 100;
+  }
+  if (rate > 0.5) {
+    res.status(400).json({ error: 'Commission rate cannot exceed 50%.' });
+    return;
+  }
+  platformCommissionRate = rate;
+  logHqAudit('Comissão Global SaaS', `Taxa de split da plataforma atualizada para ${(rate * 100).toFixed(1)}%.`, 'warning');
+  res.json({ platformCommissionRate, percent: rate * 100 });
 });

@@ -296,9 +296,7 @@ export class TablesWindowComponent {
   }
 
   openTable(table: TableInfo, event: { server: string, guests: number }) {
-    this.ecosystem.tables.update(tables =>
-      tables.map(t => t.id === table.id ? { ...t, status: 'occupied', server: event.server, guests: event.guests } : t)
-    );
+    this.ecosystem.updateTable(table.id, { status: 'occupied', server: event.server, guests: event.guests });
     this.activeTable.set(null);
     this.ecosystem.notify(`Mesa ${table.number} aberta para ${event.guests} pessoas com garçom ${event.server}.`, 'success');
   }
@@ -340,17 +338,13 @@ export class TablesWindowComponent {
   }
 
   onCloseBill(table: TableInfo) {
-    this.ecosystem.tables.update(tables =>
-      tables.map(t => t.id === table.id ? { ...t, status: 'billing' } : t)
-    );
+    this.ecosystem.updateTable(table.id, { status: 'billing' });
     this.activeTable.set(null);
     this.ecosystem.notify(`Pré-conta da Mesa ${table.number} impressa com divisão por pessoa (R$ ${(this.currentTableTotal() / (table.guests || 2)).toFixed(2)}/pessoa).`, 'info');
   }
 
   onSettleTable(table: TableInfo) {
-    this.ecosystem.tables.update(tables =>
-      tables.map(t => t.id === table.id ? { ...t, status: 'available', server: undefined, guests: undefined } : t)
-    );
+    this.ecosystem.updateTable(table.id, { status: 'available', server: undefined, guests: undefined });
 
     // Register sale transaction in financial ledger
     this.ecosystem.addFinancialEntry({

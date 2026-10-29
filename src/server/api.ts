@@ -4,6 +4,8 @@ import { hqRouter } from './routes/hq.router';
 import { tenantsRouter } from './routes/tenants.router';
 import { productsRouter } from './routes/products.router';
 import { ordersRouter } from './routes/orders.router';
+import { tablesRouter } from './routes/tables.router';
+import { financialsRouter } from './routes/financials.router';
 
 export const apiRouter = Router();
 
@@ -12,6 +14,8 @@ apiRouter.use('/hq', hqRouter);
 apiRouter.use('/tenants', tenantsRouter);
 apiRouter.use('/products', productsRouter);
 apiRouter.use('/orders', ordersRouter);
+apiRouter.use('/tables', tablesRouter);
+apiRouter.use('/financials', financialsRouter);
 
 // Fallback 404 for undefined API routes
 apiRouter.use((_req, res) => {

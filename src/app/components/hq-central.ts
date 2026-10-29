@@ -679,7 +679,7 @@ interface CommandItem {
                           <label for="hqCommRate" class="text-[10px] font-mono font-bold text-amber-500 uppercase">Comissão Padrão da Plataforma (%)</label>
                           <div class="flex items-center gap-2">
                              <input id="hqCommRate" type="number" [value]="ecosystem.hqCommissionRate() * 100" (input)="updateCommission($event)" class="flex-1 bg-[#1a0e07] border border-[#4d2813] rounded-xl px-3 py-2 text-white font-mono font-bold focus:border-amber-500 outline-none">
-                             <button (click)="ecosystem.notify('Taxa de comissão global atualizada.', 'warning')" class="bg-amber-600 p-2 rounded-xl text-stone-950"><mat-icon class="text-sm">save</mat-icon></button>
+                             <button (click)="saveCommissionRate()" class="bg-amber-600 p-2 rounded-xl text-stone-950"><mat-icon class="text-sm">save</mat-icon></button>
                           </div>
                        </div>
 
@@ -1050,8 +1050,7 @@ export class HQCentralComponent implements OnInit {
   });
 
   pingDriverGps(driver: import('../models/ecosystem.model').StoreDriver) {
-    this.ecosystem.notify(`Telemetria GPS registrada: ${driver.name} em ${driver.currentLocationName}`, 'info');
-    this.ecosystem.logAudit('Ping Geodésico GPS', 'HQ', `Última telemetria GPS registrada em memória para ${driver.name} (${driver.deviceName}): ${driver.currentLocationName}`, 'info');
+    this.ecosystem.pingDriverGpsRemote(driver);
   }
 
   // Dynamic Infra Metrics (Derived from ecosystem load)
@@ -1206,6 +1205,10 @@ export class HQCentralComponent implements OnInit {
     if (!isNaN(val)) {
       this.ecosystem.hqCommissionRate.set(val);
     }
+  }
+
+  saveCommissionRate() {
+    this.ecosystem.setPlatformCommissionRate(this.ecosystem.hqCommissionRate());
   }
 
   sendBroadcast(msg: string) {

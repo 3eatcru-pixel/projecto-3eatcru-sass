@@ -115,4 +115,127 @@ describe('HqApiService (HQ Central Dedicated Backend API)', () => {
     const updated = await promise;
     expect(updated.serviceFeePercent).toBe(8.5);
   });
+
+  it('should fetch and update license plans', async () => {
+    const mockPlans = [
+      { id: 'Starter', name: 'Starter', priceMonthly: 149.0, maxDevices: 4, includedModules: [], description: 'Test' }
+    ];
+
+    const getPromise = service.getPlans();
+    const getReq = httpMock.expectOne('/api/hq/plans');
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush(mockPlans);
+    const plans = await getPromise;
+    expect(plans.length).toBe(1);
+
+    const updatePromise = service.updatePlan('Starter', { priceMonthly: 179.0 });
+    const updateReq = httpMock.expectOne('/api/hq/plans/Starter');
+    expect(updateReq.request.method).toBe('PATCH');
+    updateReq.flush({ ...mockPlans[0], priceMonthly: 179.0 });
+    const updatedPlan = await updatePromise;
+    expect(updatedPlan.priceMonthly).toBe(179.0);
+  });
+
+  it('should fetch and update regional marketplace configuration', async () => {
+    const mockConfig = {
+      heroTitle: 'Gastronomia & Varejo em São Paulo',
+      heroSubtitle: 'Descubra os melhores estabelecimentos',
+      heroTag: 'HUB OFICIAL 3EATCRU',
+      heroBannerImage: 'https://example.com/banner.jpg',
+      heroCtaText: 'Explorar Lojas',
+      heroAnnouncement: 'Praça operando normalmente',
+      showHeroAnnouncement: true,
+      featuredTenantIds: ['tenant-1'],
+      defaultSearchRadiusKm: 15,
+      activeRegionName: 'São Paulo Centro-Sul'
+    };
+
+    const getPromise = service.getRegionalConfig();
+    const getReq = httpMock.expectOne('/api/hq/regional');
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush(mockConfig);
+    const config = await getPromise;
+    expect(config.activeRegionName).toBe('São Paulo Centro-Sul');
+
+    const updatePromise = service.updateRegionalConfig({ ...mockConfig, defaultSearchRadiusKm: 20 });
+    const updateReq = httpMock.expectOne('/api/hq/regional');
+    expect(updateReq.request.method).toBe('POST');
+    updateReq.flush({ config: { ...mockConfig, defaultSearchRadiusKm: 20 } });
+    const result = await updatePromise;
+    expect(result.config.defaultSearchRadiusKm).toBe(20);
+  });
+
+  it('should fetch drivers and ping telematics GPS', async () => {
+    const mockDrivers = [
+      { id: 'drv-1', name: 'Carlos Lima', status: 'available', currentLocationName: 'Bela Vista' }
+    ];
+
+    const getPromise = service.getDrivers();
+    const getReq = httpMock.expectOne('/api/hq/drivers');
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush(mockDrivers);
+    const drivers = await getPromise;
+    expect(drivers.length).toBe(1);
+
+    const pingPromise = service.pingDriverGps('drv-1', { locationName: 'Avenida Paulista', batteryLevel: 92 });
+    const pingReq = httpMock.expectOne('/api/hq/drivers/drv-1/ping');
+    expect(pingReq.request.method).toBe('POST');
+    pingReq.flush({ ...mockDrivers[0], currentLocationName: 'Avenida Paulista', batteryLevel: 92 });
+    const pinged = await pingPromise;
+    expect(pinged.currentLocationName).toBe('Avenida Paulista');
+  });
+
+  it('should fetch and save global CRM consumers', async () => {
+    const mockConsumers = [
+      { id: 'usr-1', name: 'Ana Oliveira', email: 'ana@example.com', phone: '11999999999' }
+    ];
+
+    const getPromise = service.getConsumers();
+    const getReq = httpMock.expectOne('/api/hq/consumers');
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush(mockConsumers);
+    const consumers = await getPromise;
+    expect(consumers.length).toBe(1);
+
+    const savePromise = service.saveConsumer({ name: 'Bruno Santos', email: 'bruno@example.com' });
+    const saveReq = httpMock.expectOne('/api/hq/consumers');
+    expect(saveReq.request.method).toBe('POST');
+    saveReq.flush({ id: 'usr-2', name: 'Bruno Santos', email: 'bruno@example.com' });
+    const saved = await savePromise;
+    expect(saved.id).toBe('usr-2');
+  });
+
+  it('should set platform commission rate, maintenance, broadcast, and retrieve ledger', async () => {
+    // Commission rate
+    const commPromise = service.setCommissionRate(8.5);
+    const commReq = httpMock.expectOne('/api/hq/system/commission');
+    expect(commReq.request.method).toBe('POST');
+    commReq.flush({ platformCommissionRate: 0.085, percent: 8.5 });
+    const commRes = await commPromise;
+    expect(commRes.percent).toBe(8.5);
+
+    // Maintenance
+    const maintPromise = service.setMaintenance(true);
+    const maintReq = httpMock.expectOne('/api/hq/system/maintenance');
+    expect(maintReq.request.method).toBe('POST');
+    maintReq.flush({ maintenanceMode: true });
+    const maintRes = await maintPromise;
+    expect(maintRes.maintenanceMode).toBe(true);
+
+    // Broadcast
+    const broadPromise = service.setBroadcast('Aviso do Fundador');
+    const broadReq = httpMock.expectOne('/api/hq/system/broadcast');
+    expect(broadReq.request.method).toBe('POST');
+    broadReq.flush({ globalBroadcastMessage: 'Aviso do Fundador' });
+    const broadRes = await broadPromise;
+    expect(broadRes.globalBroadcastMessage).toBe('Aviso do Fundador');
+
+    // Ledger
+    const ledgerPromise = service.getLedger();
+    const ledgerReq = httpMock.expectOne('/api/hq/ledger');
+    expect(ledgerReq.request.method).toBe('GET');
+    ledgerReq.flush({ totalPlatformFees: 250.0, platformSplitPercent: 8, recordsCount: 10, entries: [] });
+    const ledgerRes = await ledgerPromise;
+    expect(ledgerRes.totalPlatformFees).toBe(250.0);
+  });
 });

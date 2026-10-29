@@ -1,5 +1,131 @@
 [
   {
+    "id": "aud-test-1793296709519",
+    "timestamp": "29/10/2026, 14:58:29",
+    "user": "fundador@3eatcru.com.br",
+    "action": "Auditoria de Teste",
+    "module": "HQ",
+    "details": "Verificação da integridade do backend HQ Central",
+    "severity": "info"
+  },
+  {
+    "id": "aud-test-1793296055374",
+    "timestamp": "29/10/2026, 14:47:35",
+    "user": "fundador@3eatcru.com.br",
+    "action": "Auditoria de Teste",
+    "module": "HQ",
+    "details": "Verificação da integridade do backend HQ Central",
+    "severity": "info"
+  },
+  {
+    "id": "aud-mvttxtif-2m5s",
+    "timestamp": "29/10/2026, 14:41:08",
+    "user": "Dono do App (HQ)",
+    "action": "Entregador Atualizado",
+    "module": "HQ",
+    "details": "Entregador Danilo Moto atualizado.",
+    "severity": "info"
+  },
+  {
+    "id": "aud-mvttxj5h-1bm9",
+    "timestamp": "29/10/2026, 14:40:54",
+    "user": "Dono do App (HQ)",
+    "action": "Novo Entregador Registrado",
+    "module": "HQ",
+    "details": "Entregador Danilo Moto (private) adicionado à frota.",
+    "severity": "info"
+  },
+  {
+    "id": "aud-test-1793295537898",
+    "timestamp": "29/10/2026, 14:38:57",
+    "user": "fundador@3eatcru.com.br",
+    "action": "Auditoria de Teste",
+    "module": "HQ",
+    "details": "Verificação da integridade do backend HQ Central",
+    "severity": "info"
+  },
+  {
+    "id": "aud-mvttjoq9-loe1",
+    "timestamp": "29/10/2026, 14:30:09",
+    "user": "Dono do App (HQ)",
+    "action": "Telemetria GPS MDM",
+    "module": "HQ",
+    "details": "Ping registrado para Carlos Oliveira: Avenida Paulista, 1500 (14:30:09).",
+    "severity": "info"
+  },
+  {
+    "id": "aud-mvttjopt-s138",
+    "timestamp": "29/10/2026, 14:30:08",
+    "user": "Dono do App (HQ)",
+    "action": "Comissão Global SaaS",
+    "module": "HQ",
+    "details": "Taxa de split da plataforma atualizada para 8.5%.",
+    "severity": "warning"
+  },
+  {
+    "id": "aud-test-1793294928600",
+    "timestamp": "29/10/2026, 14:28:48",
+    "user": "fundador@3eatcru.com.br",
+    "action": "Auditoria de Teste",
+    "module": "HQ",
+    "details": "Verificação da integridade do backend HQ Central",
+    "severity": "info"
+  },
+  {
+    "id": "aud-test-1793294753817",
+    "timestamp": "29/10/2026, 14:25:53",
+    "user": "fundador@3eatcru.com.br",
+    "action": "Auditoria de Teste",
+    "module": "HQ",
+    "details": "Verificação da integridade do backend HQ Central",
+    "severity": "info"
+  },
+  {
+    "id": "aud-test-1793294724206",
+    "timestamp": "29/10/2026, 14:25:24",
+    "user": "fundador@3eatcru.com.br",
+    "action": "Auditoria de Teste",
+    "module": "HQ",
+    "details": "Verificação da integridade do backend HQ Central",
+    "severity": "info"
+  },
+  {
+    "id": "aud-test-1793294670911",
+    "timestamp": "29/10/2026, 14:24:30",
+    "user": "fundador@3eatcru.com.br",
+    "action": "Auditoria de Teste",
+    "module": "HQ",
+    "details": "Verificação da integridade do backend HQ Central",
+    "severity": "info"
+  },
+  {
+    "id": "aud-test-1793293596187",
+    "timestamp": "29/10/2026, 14:06:36",
+    "user": "fundador@3eatcru.com.br",
+    "action": "Auditoria de Teste",
+    "module": "HQ",
+    "details": "Verificação da integridade do backend HQ Central",
+    "severity": "info"
+  },
+  {
+    "id": "aud-test-1793293339958",
+    "timestamp": "29/10/2026, 14:02:19",
+    "user": "fundador@3eatcru.com.br",
+    "action": "Auditoria de Teste",
+    "module": "HQ",
+    "details": "Verificação da integridade do backend HQ Central",
+    "severity": "info"
+  },
+  {
+    "id": "aud-test-1793293046997",
+    "timestamp": "29/10/2026, 13:57:26",
+    "user": "fundador@3eatcru.com.br",
+    "action": "Auditoria de Teste",
+    "module": "HQ",
+    "details": "Verificação da integridade do backend HQ Central",
+    "severity": "info"
+  },
+  {
     "id": "aud-test-1793292312171",
     "timestamp": "29/10/2026, 13:45:12",
     "user": "fundador@3eatcru.com.br",

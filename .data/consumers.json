@@ -1,0 +1,30 @@
+[
+  {
+    "id": "cons-1",
+    "name": "Carlos Eduardo",
+    "email": "carlos.eduardo@gmail.com",
+    "phone": "(11) 98888-7777",
+    "cpf": "320.198.441-00",
+    "primaryAddress": "Rua Augusta, 1200 - Apto 42",
+    "neighborhood": "Consolação",
+    "city": "São Paulo",
+    "totalOrders": 12,
+    "totalSpent": 840.5,
+    "status": "active",
+    "registeredAt": "2024-02-10"
+  },
+  {
+    "id": "cons-2",
+    "name": "Mariana Costa",
+    "email": "mariana.costa@outlook.com",
+    "phone": "(11) 97777-3322",
+    "cpf": "412.875.990-12",
+    "primaryAddress": "Alameda Santos, 800 - Conj 101",
+    "neighborhood": "Cerqueira César",
+    "city": "São Paulo",
+    "totalOrders": 8,
+    "totalSpent": 520,
+    "status": "active",
+    "registeredAt": "2024-03-01"
+  }
+]

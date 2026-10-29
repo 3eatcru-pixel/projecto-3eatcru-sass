@@ -40,6 +40,7 @@ import { SimulationSandboxEngine } from '../core/engines/simulation-sandbox.engi
 import { PaymentEngine } from '../core/engines/payment.engine';
 import { FirebaseService } from '../core/firebase/firebase.service';
 import { HqApiService } from './hq-api.service';
+import { StoreOsApiService } from './store-os-api.service';
 
 @Injectable({
   providedIn: 'root'
@@ -49,6 +50,7 @@ export class EcosystemService {
   public readonly mapTools = inject(MapToolsService);
   public readonly firebase = inject(FirebaseService);
   public readonly hqApi = inject(HqApiService, { optional: true });
+  public readonly storeOsApi = inject(StoreOsApiService, { optional: true });
 
   // Core Business Engines
   public readonly financialEngine = inject(FinancialCoreEngine);
@@ -215,11 +217,18 @@ export class EcosystemService {
       if (overview.globalBroadcastMessage !== undefined) {
         this.globalBroadcastMessage.set(overview.globalBroadcastMessage || '');
       }
+      if (overview.defaultCommissionPercent) {
+        this.hqCommissionRate.set(overview.defaultCommissionPercent / 100);
+      }
 
-      const [tenants, devices, auditLogs] = await Promise.all([
+      const [tenants, devices, auditLogs, plans, regional, drivers, consumers] = await Promise.all([
         this.hqApi.getTenants().catch(() => []),
         this.hqApi.getDevices().catch(() => []),
-        this.hqApi.getAuditLogs().catch(() => [])
+        this.hqApi.getAuditLogs().catch(() => []),
+        this.hqApi.getPlans().catch(() => []),
+        this.hqApi.getRegionalConfig().catch(() => null),
+        this.hqApi.getDrivers().catch(() => []),
+        this.hqApi.getConsumers().catch(() => [])
       ]);
 
       if (Array.isArray(tenants) && tenants.length > 0) {
@@ -230,6 +239,18 @@ export class EcosystemService {
       }
       if (Array.isArray(auditLogs) && auditLogs.length > 0) {
         this.auditLogs.set(auditLogs);
+      }
+      if (Array.isArray(plans) && plans.length > 0) {
+        this.licensePlans.set(plans);
+      }
+      if (regional && regional.heroTitle) {
+        this.regionalConfig.set(regional);
+      }
+      if (Array.isArray(drivers) && drivers.length > 0) {
+        this.drivers.set(drivers);
+      }
+      if (Array.isArray(consumers) && consumers.length > 0) {
+        this.consumerAccounts.set(consumers);
       }
       return true;
     } catch {
@@ -257,8 +278,53 @@ export class EcosystemService {
     return this.lastSystemAuditReport()!;
   }
 
-  updateRegionalConfig(updates: Partial<RegionalMarketplaceConfig>) {
+  async syncStoreOsFromBackend(tenantId?: string): Promise<boolean> {
+    if (!this.storeOsApi) return false;
+    try {
+      const activeTenant = tenantId || this.currentTenantId();
+      const [prods, ords, tables, fins] = await Promise.all([
+        this.storeOsApi.getProducts(activeTenant).catch(() => []),
+        this.storeOsApi.getOrders(activeTenant).catch(() => []),
+        this.storeOsApi.getTables().catch(() => []),
+        this.storeOsApi.getFinancials().catch(() => [])
+      ]);
+
+      if (Array.isArray(prods) && prods.length > 0) {
+        this.products.update(cur => {
+          const ids = new Set(prods.map(p => p.id));
+          return [...prods, ...cur.filter(c => !ids.has(c.id))];
+        });
+      }
+      if (Array.isArray(ords) && ords.length > 0) {
+        this.orders.update(cur => {
+          const ids = new Set(ords.map(o => o.id));
+          return [...ords, ...cur.filter(c => !ids.has(c.id))];
+        });
+      }
+      if (Array.isArray(tables) && tables.length > 0) {
+        this.tables.set(tables);
+      }
+      if (Array.isArray(fins) && fins.length > 0) {
+        this.financials.update(cur => {
+          const ids = new Set(fins.map(f => f.id));
+          return [...fins, ...cur.filter(c => !ids.has(c.id))];
+        });
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async updateRegionalConfig(updates: Partial<RegionalMarketplaceConfig>) {
     this.regionalConfig.update(cfg => ({ ...cfg, ...updates }));
+    if (this.hqApi) {
+      try {
+        await this.hqApi.updateRegionalConfig(this.regionalConfig());
+      } catch (err) {
+        console.warn('Regional config update deferred:', err);
+      }
+    }
     this.notify('Portal Regional atualizado pelo Gabinete Executivo HQ com sucesso!', 'success');
   }
 
@@ -777,11 +843,42 @@ export class EcosystemService {
     }
   ]);
 
-  updatePlanPrice(planId: string, newPrice: number) {
+  async updatePlanPrice(planId: string, newPrice: number) {
     this.licensePlans.update(plans =>
       plans.map(p => p.id === planId ? { ...p, priceMonthly: newPrice } : p)
     );
+    if (this.hqApi) {
+      try {
+        await this.hqApi.updatePlan(planId, { priceMonthly: newPrice });
+      } catch (err) {
+        console.warn('Plan price update deferred:', err);
+      }
+    }
     this.notify(`Preço do plano ${planId} atualizado com sucesso pelo HQ Central para R$ ${newPrice.toFixed(2)}/mês.`, 'success');
+  }
+
+  async setPlatformCommissionRate(rate: number) {
+    this.hqCommissionRate.set(rate);
+    if (this.hqApi) {
+      try {
+        await this.hqApi.setCommissionRate(rate * 100);
+      } catch (err) {
+        console.warn('Commission rate sync deferred:', err);
+      }
+    }
+    this.notify(`Taxa de comissão global atualizada para ${(rate * 100).toFixed(1)}%.`, 'success');
+  }
+
+  async pingDriverGpsRemote(driver: StoreDriver) {
+    if (this.hqApi) {
+      try {
+        await this.hqApi.pingDriverGps(driver.id);
+      } catch (err) {
+        console.warn('Driver GPS ping deferred:', err);
+      }
+    }
+    this.notify(`Telemetria GPS registrada: ${driver.name} em ${driver.currentLocationName}`, 'info');
+    this.logAudit('Ping Geodésico GPS', 'HQ', `Última telemetria GPS registrada em memória para ${driver.name} (${driver.deviceName}): ${driver.currentLocationName}`, 'info');
   }
 
   readonly isSimulationActive = computed(() => this.sandboxEngine.activeExecutionMode() === 'simulation');
@@ -1718,6 +1815,12 @@ export class EcosystemService {
       });
     }
 
+    if (this.storeOsApi) {
+      this.storeOsApi.createOrder(order).catch(err => {
+        console.warn('Store OS order sync deferred:', err);
+      });
+    }
+
     return order;
   }
 
@@ -1728,6 +1831,11 @@ export class EcosystemService {
       id: 'fin-' + Math.floor(Math.random() * 9000 + 1000)
     };
     this.financials.update(f => [fin, ...f]);
+    if (this.storeOsApi) {
+      this.storeOsApi.addFinancialRecord(fin).catch(err => {
+        console.warn('Store OS financial sync deferred:', err);
+      });
+    }
   }
 
   updateOrderStatus(orderId: string, status: OrderTransaction['status']) {
@@ -1737,6 +1845,12 @@ export class EcosystemService {
 
     const order = this.orders().find(o => o.id === orderId);
     if (order) {
+      if (this.storeOsApi) {
+        this.storeOsApi.updateOrderStatus(orderId, status).catch(err => {
+          console.warn('Store OS order status sync deferred:', err);
+        });
+      }
+
       if (this.firebase.isInitialized()) {
         this.firebase.updateTenantOrderStatus(order.tenantId, orderId, status).catch(err => {
           console.warn('Firebase order status update deferred:', err);
@@ -1750,6 +1864,28 @@ export class EcosystemService {
           this.sendWhatsAppMessage(order.customerName || 'Cliente', order.customerPhone || '', `Seu pedido ${order.orderNumber} saiu para entrega! 🚚 Fique atento para receber.`);
         }
       }
+    }
+  }
+
+  updateTable(tableId: string, updates: Partial<TableInfo>) {
+    this.tables.update(tables =>
+      tables.map(t => t.id === tableId ? { ...t, ...updates } : t)
+    );
+    if (this.storeOsApi) {
+      this.storeOsApi.updateTable(tableId, updates).catch(err => {
+        console.warn('Store OS table update deferred:', err);
+      });
+    }
+  }
+
+  updateProduct(productId: string, updates: Partial<ProductItem>) {
+    this.products.update(prods =>
+      prods.map(p => p.id === productId ? { ...p, ...updates } : p)
+    );
+    if (this.storeOsApi) {
+      this.storeOsApi.updateProduct(productId, updates).catch(err => {
+        console.warn('Store OS product update deferred:', err);
+      });
     }
   }
 
@@ -1784,6 +1920,11 @@ export class EcosystemService {
       id: 'prod-' + Math.floor(Math.random() * 9000 + 1000)
     };
     this.products.update(p => [newProd, ...p]);
+    if (this.storeOsApi) {
+      this.storeOsApi.createProduct(newProd).catch(err => {
+        console.warn('Store OS createProduct deferred:', err);
+      });
+    }
   }
 
   toggleAppInstallation(appId: string) {
@@ -2060,11 +2201,21 @@ export class EcosystemService {
       completedTodayCount: 0
     };
     this.drivers.update(d => [newDriver, ...d]);
+    if (this.storeOsApi) {
+      this.storeOsApi.createDriver(newDriver).catch(err => console.warn('Store OS createDriver deferred:', err));
+    } else if (this.hqApi) {
+      this.hqApi.createDriver(newDriver).catch(err => console.warn('HQ createDriver deferred:', err));
+    }
     this.notify(`Entregador ${newDriver.name} registrado na frota própria da loja.`, 'success');
   }
 
   updateDriverStatus(id: string, status: StoreDriver['status']) {
     this.drivers.update(drvs => drvs.map(d => d.id === id ? { ...d, status } : d));
+    if (this.storeOsApi) {
+      this.storeOsApi.updateDriver(id, { status }).catch(err => console.warn('Store OS updateDriver deferred:', err));
+    } else if (this.hqApi) {
+      this.hqApi.updateDriver(id, { status }).catch(err => console.warn('HQ updateDriver deferred:', err));
+    }
     this.notify(`Status do motorista atualizado para: ${status}`, 'info');
   }
 

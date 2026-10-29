@@ -586,6 +586,8 @@ export class ClientOsComponent implements OnInit, OnDestroy {
     }
     this.updateClock();
     this.clockInterval = setInterval(() => this.updateClock(), 1000);
+    // Sync store operational data with Express backend
+    this.ecosystem.syncStoreOsFromBackend(this.ecosystem.currentTenantId());
   }
 
   ngOnDestroy() {
@@ -875,6 +877,7 @@ export class ClientOsComponent implements OnInit, OnDestroy {
 
   selectCompany(tenantId: string) {
     this.ecosystem.currentTenantId.set(tenantId);
+    this.ecosystem.syncStoreOsFromBackend(tenantId);
     this.showCompanyMenu.set(false);
   }
 
